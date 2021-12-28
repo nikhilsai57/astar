@@ -1,57 +1,110 @@
-from pyamaze import maze,agent,textLabel
-from queue import PriorityQueue
-def h(cell1,cell2):
-    x1,y1=cell1
-    x2,y2=cell2
-
-    return abs(x1-x2) + abs(y1-y2)
-def aStar(m):
-    start=(m.rows,m.cols)
-    g_score={cell:float('inf') for cell in m.grid}
-    g_score[start]=0
-    f_score={cell:float('inf') for cell in m.grid}
-    f_score[start]=h(start,(1,1))
-
-    open=PriorityQueue()
-    open.put((h(start,(1,1)),h(start,(1,1)),start))
-    aPath={}
-    while not open.empty():
-        currCell=open.get()[2]
-        if currCell==(1,1):
-            break
-        for d in 'ESNW':
-            if m.maze_map[currCell][d]==True:
-                if d=='E':
-                    childCell=(currCell[0],currCell[1]+1)
-                if d=='W':
-                    childCell=(currCell[0],currCell[1]-1)
-                if d=='N':
-                    childCell=(currCell[0]-1,currCell[1])
-                if d=='S':
-                    childCell=(currCell[0]+1,currCell[1])
-
-                temp_g_score=g_score[currCell]+1
-                temp_f_score=temp_g_score+h(childCell,(1,1))
-
-                if temp_f_score < f_score[childCell]:
-                    g_score[childCell]= temp_g_score
-                    f_score[childCell]= temp_f_score
-                    open.put((temp_f_score,h(childCell,(1,1)),childCell))
-                    aPath[childCell]=currCell
-    fwdPath={}
-    cell=(1,1)
-    while cell!=start:
-        fwdPath[aPath[cell]]=cell
-        cell=aPath[cell]
-    return fwdPath
-
-if __name__=='__main__':
-    m=maze(5,5)
-    m.CreateMaze()
-    path=aStar(m)
-
-    a=agent(m,footprints=True)
-    m.tracePath({a:path})
-    l=textLabel(m,'A Star Path Length',len(path)+1)
-
-    m.run()
+def aStarAlgo(start_node, stop_node):
+         
+        open_set = set(start_node) 
+        closed_set = set()
+        g = {} #store distance from starting node
+        parents = {}# parents contains an adjacency map of all nodes
+ 
+        #ditance of starting node from itself is zero
+        g[start_node] = 0
+        #start_node is root node i.e it has no parent nodes
+        #so start_node is set to its own parent node
+        parents[start_node] = start_node
+         
+         
+        while len(open_set) > 0:
+            n = None
+ 
+            #node with lowest f() is found
+            for v in open_set:
+                if n == None or g[v] + heuristic(v) < g[n] + heuristic(n):
+                    n = v
+             
+                     
+            if n == stop_node or Graph_nodes[n] == None:
+                pass
+            else:
+                for (m, weight) in get_neighbors(n):
+                    #nodes 'm' not in first and last set are added to first
+                    #n is set its parent
+                    if m not in open_set and m not in closed_set:
+                        open_set.add(m)
+                        parents[m] = n
+                        g[m] = g[n] + weight
+                         
+     
+                    #for each node m,compare its distance from start i.e g(m) to the
+                    #from start through n node
+                    else:
+                        if g[m] > g[n] + weight:
+                            #update g(m)
+                            g[m] = g[n] + weight
+                            #change parent of m to n
+                            parents[m] = n
+                             
+                            #if m in closed set,remove and add to open
+                            if m in closed_set:
+                                closed_set.remove(m)
+                                open_set.add(m)
+ 
+            if n == None:
+                print('Path does not exist!')
+                return None
+ 
+            # if the current node is the stop_node
+            # then we begin reconstructin the path from it to the start_node
+            if n == stop_node:
+                path = []
+ 
+                while parents[n] != n:
+                    path.append(n)
+                    n = parents[n]
+ 
+                path.append(start_node)
+ 
+                path.reverse()
+ 
+                print('Path found: {}'.format(path))
+                return path
+ 
+ 
+            # remove n from the open_list, and add it to closed_list
+            # because all of his neighbors were inspected
+            open_set.remove(n)
+            closed_set.add(n)
+ 
+        print('Path does not exist!')
+        return None
+         
+#define fuction to return neighbor and its distance
+#from the passed node
+def get_neighbors(v):
+    if v in Graph_nodes:
+        return Graph_nodes[v]
+    else:
+        return None
+#for simplicity we ll consider heuristic distances given
+#and this function returns heuristic distance for all nodes
+def heuristic(n):
+        H_dist = {
+            'A': 1,
+            'B': 2,
+            'C': 9,
+            'D': 1,
+            'E': 6,
+            'G': 2,
+             
+        }
+ 
+        return H_dist[n]
+ 
+#Describe your graph here  
+Graph_nodes = {
+    'A': [('B', 4), ('E', 5)],
+    'B': [('C', 1),('G', 2)],
+    'C': None,
+    'E': [('D', 5)],
+    'D': [('G', 2)],
+     
+}
+aStarAlgo('A', 'G')
